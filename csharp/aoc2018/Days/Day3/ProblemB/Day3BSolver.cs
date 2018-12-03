@@ -34,8 +34,6 @@ namespace AdventOfCode
 						allRects.Add(rect);
 					}
 				}
-
-				Console.WriteLine("Testing " + allRects.Count);
 				foreach (var rect in allRects)
 				{
 					if (IsIsolated(rect))
@@ -49,12 +47,12 @@ namespace AdventOfCode
 		private static bool IsIsolated(Rect rect)
 		{
 			
-			for (int i = rect.MinX; i < (rect.MinX + rect.Width) - 1; i++)
+			for (int i = rect.MinX; i < (rect.MinX + rect.Width); i++)
 			{
-				for (int j = rect.MinY; j < (rect.MinY + rect.Height) - 1; j++)
+				for (int j = rect.MinY; j < (rect.MinY + rect.Height); j++)
 				{
 					int index = TileToIndex(i, j);
-					if (index > 1)
+					if (TileMap[index] > 1)
 					{
 						return false;
 					}
@@ -72,9 +70,9 @@ namespace AdventOfCode
 		private static void MarkUsage(Rect rect)
 		{
 			
-			for (int i = rect.MinX; i < (rect.MinX + rect.Width) - 1; i++)
+			for (int i = rect.MinX; i < (rect.MinX + rect.Width); i++)
 			{
-				for (int j = rect.MinY; j < (rect.MinY + rect.Height) - 1; j++)
+				for (int j = rect.MinY; j < (rect.MinY + rect.Height); j++)
 				{
 					MarkTileUsed(rect, i, j);
 				}
