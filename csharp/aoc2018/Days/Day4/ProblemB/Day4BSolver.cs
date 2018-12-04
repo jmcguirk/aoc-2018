@@ -1,15 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using Log=System.Console;
 namespace AdventOfCode
 {
-	public class Day4ASolver
+	public class Day4BSolver
 	{
 
 		
@@ -17,7 +12,7 @@ namespace AdventOfCode
 		{
 			int sum = 0;
 			
-			string inputPath = FileUtils.GetProjectFilePath("Days/Day4/ProblemA/input.txt");
+			string inputPath = FileUtils.GetProjectFilePath("Days/Day4/ProblemB/input.txt");
 			List<SecurityLog> logRecords = new List<SecurityLog>();
 			using (var reader = new System.IO.StreamReader(inputPath))
 			{
@@ -43,7 +38,7 @@ namespace AdventOfCode
 
 			foreach (var log in logRecords)
 			{
-				//Log.WriteLine("Processing " + log.RawLog);
+				Log.WriteLine("Processing " + log.RawLog);
 				if (log.Year != curYear || log.Month != curMonth || log.Day != currDay)
 				{
 					if (activeGuard != null)
@@ -104,24 +99,13 @@ namespace AdventOfCode
 			Guard topGuard = null;
 			foreach (var kvp in guards)
 			{
-				if (topGuard == null || topGuard.TotalAsleepMinutes < kvp.Value.TotalAsleepMinutes)
+				if (topGuard == null || topGuard.PeakSleepMinuteValue < kvp.Value.PeakSleepMinuteValue)
 				{
 					topGuard = kvp.Value;
 				}
 			}
-
-			int sleepiestMinuteValue = Int32.MinValue;
-			int sleepiestMinute = 0;
-			foreach (var kvp in topGuard.SleepHistogram)
-			{
-				//Log.WriteLine(kvp.Key + " " + kvp.Value);
-				if (kvp.Value > sleepiestMinuteValue)
-				{
-					sleepiestMinute = kvp.Key;
-					sleepiestMinuteValue = kvp.Value;
-				}
-			}
-			Log.WriteLine("Sleepiest guard is " + topGuard.GuardId + " result is " + (sleepiestMinute * Int32.Parse(topGuard.GuardId)));
+			
+			Log.WriteLine("Sleepiest guard is " + topGuard.GuardId + " result is " + (topGuard.PeakSleepMinute * Int32.Parse(topGuard.GuardId)));
 		}
 
 		private static int CompareLogTimestamps(SecurityLog x, SecurityLog y)
@@ -168,6 +152,49 @@ namespace AdventOfCode
 			{
 				GuardId = rgx.Replace(id, "");
 
+			}
+
+
+			private int? _peakSleepMinute;
+			private int? _peakSleepMinuteValue;
+			public int PeakSleepMinute
+			{
+				get
+				{
+					if (!_peakSleepMinute.HasValue)
+					{
+						CalculatePeakSleepMinute();
+					}
+
+					return _peakSleepMinute.Value;
+				}
+			}
+			
+			public int PeakSleepMinuteValue
+			{
+				get
+				{
+					if (!_peakSleepMinuteValue.HasValue)
+					{
+						CalculatePeakSleepMinute();
+					}
+
+					return _peakSleepMinuteValue.Value;
+				}
+			}
+
+			protected void CalculatePeakSleepMinute()
+			{
+				_peakSleepMinute = Int32.MinValue;
+				_peakSleepMinuteValue = Int32.MinValue;
+				foreach (var kvp in SleepHistogram)
+				{
+					if (kvp.Value > _peakSleepMinuteValue)
+					{
+						_peakSleepMinuteValue = kvp.Value;
+						_peakSleepMinute = kvp.Key;
+					}	
+				}
 			}
 			
 			public void ComeOnDuty(int frame)
