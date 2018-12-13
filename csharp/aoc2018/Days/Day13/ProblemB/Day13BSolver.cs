@@ -9,13 +9,13 @@ using System.Text;
 using Log=System.Console;
 namespace AdventOfCode
 {
-	public class Day13ASolver
+	public class Day13BSolver
 	{
 		public static void Solve()
 		{
 			int sum = 0;
 			
-			string inputPath = FileUtils.GetProjectFilePath("Days/Day13/ProblemA/input.txt");
+			string inputPath = FileUtils.GetProjectFilePath("Days/Day13/ProblemB/input.txt");
 			String[] lines = File.ReadAllLines(inputPath);
 			MinecartSystem ms = new MinecartSystem(lines);
 			ms.Simulate();
@@ -122,25 +122,44 @@ namespace AdventOfCode
 			public void Simulate()
 			{
 				RenderGameboard();
-				bool didCollide = false;
-				while (!didCollide)
+				List<Minecart> toRemove = new List<Minecart>();
+				while (_carts.Count > 1)
 				{
 					_carts.Sort(CompareCartsByLocation); // Sort the cars
+					toRemove.Clear();
 					foreach (var cart in _carts)
 					{
-						if (AdvanceCart(cart))
-						{
-							didCollide = true;
-							break;
-						}
-						
+						AdvanceCart(cart);
 					}
-					RenderGameboard();	
+					
+					foreach (var cart in _carts)
+					{
+						if (cart.DidCrash)
+						{
+							toRemove.Add(cart);	
+						}
+					}
+
+					foreach (var cart in toRemove)
+					{
+						if (_cartLocations[cart.TileIndex] == cart)
+						{
+							_cartLocations[cart.TileIndex] = null;
+						}
+						_carts.Remove(cart);
+					}
+					
+					//RenderGameboard();		
 				}
+				Log.WriteLine("Final cart is at " + _carts[0].X + "," + _carts[0].Y);
 			}
 
-			private bool AdvanceCart(Minecart a)
+			private void AdvanceCart(Minecart a)
 			{
+				if (a.DidCrash)
+				{
+					return;
+				}
 				int nextTileX = a.X;
 				int nextTileY = a.Y;
 				switch (a.Orientation)
@@ -165,15 +184,16 @@ namespace AdventOfCode
 
 				a.X = nextTileX;
 				a.Y = nextTileY;
-				a.TileIndex = newTileIndex;
+				
 				
 				Minecart newLocation = _cartLocations[newTileIndex];
-				if (newLocation != null)
+				if (newLocation != null && !newLocation.DidCrash)
 				{
-					Log.WriteLine("Mine cart collided at " + a.X + "," + a.Y);
-					return true;
+					newLocation.DidCrash = true;
+					a.DidCrash = true;
+					return;
 				}
-
+				a.TileIndex = newTileIndex;
 				_cartLocations[oldTileIndex] = null;
 				_cartLocations[newTileIndex] = a;
 
@@ -268,8 +288,6 @@ namespace AdventOfCode
 						a.TurnCount = turnCount % 3;
 						break;
 				}
-				
-				return false;
 			}
 
 			private int CompareCartsByLocation(Minecart a, Minecart b)
@@ -408,6 +426,7 @@ namespace AdventOfCode
 			public int X;
 			public int Y;
 			public int TileIndex;
+			public bool DidCrash;
 			public MinecartOrientation Orientation;
 			public int TurnCount;
 			public const char FacingWest = '<';
