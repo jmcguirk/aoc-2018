@@ -87,6 +87,8 @@ namespace AdventOfCode
 
 			Flood(fountain, null);
 			RenderGameBoard();
+			
+			Log.WriteLine("Total tiles flooded: " + FloodCount);
 		}
 
 		private static int FloodCount = 0;
@@ -108,11 +110,6 @@ namespace AdventOfCode
 				root.FloodedFrom = direction;
 				root.FloodedOnFrame = FloodCount;
 				FloodCount++;
-
-				if (root.Bottom != null && root.Bottom.TileType == TileType.Clay)
-				{
-					root.IsSettled = true;
-				}
 			}
 			
 
@@ -123,22 +120,25 @@ namespace AdventOfCode
 			}
 
 
+            bool bottomDiscovered = false;
 			if (root.Bottom != null && !root.Bottom.IsFlooded && root.Bottom.TileType == TileType.Sand)
 			{
-				Flood(root.Bottom, root);
-			}
-			
-			if (root.Left != null && !root.Left.IsFlooded && root.Left.TileType == TileType.Sand)
-			{
-				Flood(root.Left, root);
-			}
-			
-			if (root.Right != null && !root.Right.IsFlooded && root.Right.TileType == TileType.Sand)
-			{
-				Flood(root.Right, root);
+				bottomDiscovered = Flood(root.Bottom, root);
 			}
 
-			return true;
+			bool didExploreLeft = false;
+			if (!bottomDiscovered && root.Left != null && !root.Left.IsFlooded && root.Left.TileType == TileType.Sand)
+			{
+				didExploreLeft = true;
+				bottomDiscovered = Flood(root.Left, root);
+			}
+			
+			if ((root.Right != null && !root.Right.IsFlooded && root.Right.TileType == TileType.Sand) && (!bottomDiscovered || didExploreLeft))
+			{
+				bottomDiscovered = Flood(root.Right, root);
+			}
+
+			return bottomDiscovered;
 		}
 
 		public static void RenderGameBoard()
@@ -262,12 +262,7 @@ namespace AdventOfCode
 				}
 				if (this.IsFlooded)
 				{
-					if (this.IsSettled)
-					{
-						return FloodedHoriz;
-					}
-
-					return FloodedVert;
+					return FloodedHoriz;
 				}
 
 				if (this.TileType == TileType.Clay)
