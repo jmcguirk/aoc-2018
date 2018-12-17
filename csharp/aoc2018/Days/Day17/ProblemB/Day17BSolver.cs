@@ -9,13 +9,14 @@ using System.Text;
 using Log=System.Console;
 namespace AdventOfCode
 {
-	public class Day17ASolver
+	public class Day17BSolver
 	{
 		private static Tile[] _tiles;
 		private static int _maxX;
 		private static int _maxY;
 		private static int _smallestYPoint;
 		private static int _largestYPoint;
+		private static int _stableTiles;
 		
 		public static void Solve()
 		{
@@ -24,7 +25,7 @@ namespace AdventOfCode
 			_maxX = 2000;
 			
 			
-			string inputPath = FileUtils.GetProjectFilePath("Days/Day17/ProblemA/input.txt");
+			string inputPath = FileUtils.GetProjectFilePath("Days/Day17/ProblemB/input.txt");
 			String[] lines = File.ReadAllLines(inputPath);
 
 			List<Vein> veins = new List<Vein>();
@@ -95,7 +96,7 @@ namespace AdventOfCode
 			Flood(fountain, null);
 			RenderGameBoard();
 			
-			Log.WriteLine("Total tiles flooded: " + FloodCount);
+			Log.WriteLine("Total tiles flooded: " + FloodCount + " with stable count " + _stableTiles);
 		}
 
 		private static int FloodCount = 0;
@@ -164,7 +165,11 @@ namespace AdventOfCode
 
 		private static void StabilizeLeftAndRight(Tile tile)
 		{
-			tile.TileType = TileType.StableWater;
+			if (tile.TileType == TileType.Flow)
+			{
+				_stableTiles++;
+			}
+			tile.TileType = TileType.StableWater;			
 			StabilizeinDirection(tile, 1);
 			StabilizeinDirection(tile, -1);
 		}
@@ -186,11 +191,11 @@ namespace AdventOfCode
 				}
 				if (next.TileType == TileType.Sand)
 				{
-					Log.WriteLine("SAND");
 					return;
 				}
 				if (next.TileType == TileType.Flow)
 				{
+					_stableTiles++;
 					next.TileType = TileType.StableWater;
 				}
 
